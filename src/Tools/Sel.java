@@ -1,8 +1,11 @@
 package Tools;
 
 import Classes.*;
+import Enums.Parameters;
+import Enums.Sizes;
 
 import java.util.ArrayList;
+import static Tools.Math_Tools.*;
 
 public class Sel {
     private Sel(){};
@@ -82,6 +85,131 @@ public class Sel {
         B.get(1).set(0, -1f);
         B.get(1).set(1, 0f);
         B.get(1).set(2, 1f);
+    }
+
+    private static Matrix createLocalK(int element,Mesh m){
+        // K = (k*Ae/D^2)Bt*At*A*B := K_3x3
+        float D,Ae,k = m.getParameter(Parameters.THERMAL_CONDUCTIVITY.ordinal());
+        Matrix K=new Matrix(),A=new Matrix(),B=new Matrix(),Bt=new Matrix(),At=new Matrix();
+
+        D = calculateLocalD(element,m);
+        Ae = calculateLocalArea(element,m);
+
+        zeroes(A,2);
+        zeroes(B,2,3);
+        calculateLocalA(element,A,m);
+        calculateB(B);
+        transpose(A,At);
+        transpose(B,Bt);
+
+        productRealMatrix(k*Ae/(D*D),productMatrixMatrix(Bt,productMatrixMatrix(At,productMatrixMatrix(A,B,2,2,3),2,2,3),3,2,3),K);
+
+        return K;
+    }
+
+    public static float calculateLocalJ(int i, Mesh m){
+        float J,a,b,c,d;
+        Element e = m.getElement(i);
+        Node n1 = m.getNode(e.getNode1()-1);
+        Node n2 = m.getNode(e.getNode2()-1);
+        Node n3 = m.getNode(e.getNode3()-1);
+
+        a=n2.getX()-n1.getX();
+        b=n3.getX()-n1.getX();
+        c=n2.getY()-n1.getY();
+        d=n3.getY()-n1.getY();
+
+        J = a * d - b * c;
+
+        return J;
+    }
+
+    public static Vector createLocalb(int element,Mesh m){
+        Vector b = new Vector();
+
+        float Q = m.getParameter(Parameters.HEAT_SOURCE.ordinal()), J, b_i;
+        J = calculateLocalJ(element,m);
+
+        b_i = Q * J / 6;
+        b.add(b_i);
+        b.add(b_i);
+        b.add(b_i);
+
+        return b;
+    }
+
+    public static void crearSistemasLocales(Mesh m, ArrayList<Matrix> localKs, ArrayList<Vector> localbs){
+        for(int i = 0; i<m.getSize(Sizes.ELEMENTS.ordinal()); i++){
+            localKs.add(createLocalK(i,m));
+            localbs.add(createLocalb(i,m));
+        }
+    }
+
+    public static void assemblyK(Element e, Matrix localK, Matrix K){
+        int index1 = e.getNode1() - 1;
+        int index2 = e.getNode2() - 1;
+        int index3 = e.getNode3() - 1;
+
+        K.get(index1).set(index1, K.get(index1).get(index1) + localK.get(0).get(0));
+        K.get(index1).set(index2, K.get(index1).get(index2) + localK.get(0).get(1));
+        K.get(index1).set(index3, K.get(index1).get(index3) + localK.get(0).get(2));
+        K.get(index2).set(index1, K.get(index2).get(index1) + localK.get(1).get(0));
+        K.get(index2).set(index2, K.get(index2).get(index2) + localK.get(1).get(1));
+        K.get(index2).set(index3, K.get(index2).get(index3) + localK.get(1).get(2));
+        K.get(index3).set(index1, K.get(index3).get(index1) + localK.get(2).get(0));
+        K.get(index3).set(index2, K.get(index3).get(index2) + localK.get(2).get(1));
+        K.get(index3).set(index3, K.get(index3).get(index3) + localK.get(2).get(2));
+    }
+
+    public static void assemblyb(Element e, Vector localb, Vector b){
+        int index1 = e.getNode1() - 1;
+        int index2 = e.getNode2() - 1;
+        int index3 = e.getNode3() - 1;
+
+        b.set(index1, b.get(index1) + localb.get(0));
+        b.set(index2, b.get(index2) + localb.get(1));
+        b.set(index3, b.get(index3) + localb.get(2));
+    }
+
+    public static void ensamblaje(Mesh m, ArrayList<Matrix> localKs, ArrayList<Vector> localbs, Matrix K,Vector b){
+        for(int i=0; i<m.getSize(Sizes.ELEMENTS.ordinal()); i++){
+            Element e = m.getElement(i);
+            assemblyK(e,localKs.get(i),K);
+            assemblyb(e,localbs.get(i),b);
+        }
+    }
+
+    public static void applyNeumann(Mesh m,Vector b){
+        for(int i=0;i <m.getSize(Sizes.NEUMANN.ordinal()); i++){
+            Condition c = m.getCondition(i,Sizes.NEUMANN);
+            b.set(c.getNode1()-1, b.get(c.getNode1()-1) + c.getValue());
+        }
+    }
+
+    public static void applyDirichlet(Mesh m,Matrix K,Vector b){
+        for(int i=0; i<m.getSize(Sizes.DIRICHLET.ordinal()); i++){
+
+            Condition c = m.getCondition(i,Sizes.DIRICHLET);
+            int index = c.getNode1()-1;
+
+            K.remove(index);
+            b.remove(index);
+
+            for(int row=0; row < K.size(); row++){
+                float cell = K.get(row).get(index);
+                K.get(row).remove(index);
+                b.set(row, b.get(row) + (-1*c.getValue()) * cell);
+            }
+        }
+    }
+
+    public static void calculate(Matrix K, Vector b, Vector T){
+        System.out.println("Iniciando calculo de respuesta...");
+        Matrix Kinv = new Matrix();
+        System.out.println("Calculo de inversa...");
+        inverseMatrix(K, Kinv);
+        System.out.println("Calculo de respuesta...");
+        productMatrixVector(Kinv, b, T);
     }
 
 }
