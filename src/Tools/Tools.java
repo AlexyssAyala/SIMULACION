@@ -1,17 +1,22 @@
 package Tools;
 import Classes.Condition;
 import Classes.Item;
+import Classes.Mesh;
 import Enums.Lines;
 import Enums.Modes;
+import Enums.Parameters;
+import Enums.Sizes;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
+
+import static Enums.Lines.*;
+import static Enums.Modes.*;
 
 public class Tools {
-    public static void obtenerDatos(BufferedReader file, int nlines, int n, Modes mode, Item[] itemList) throws IOException {
+    public static void obtenerDatos(BufferedReader file, Lines nlines, int n, Modes mode, Item[] itemList) throws IOException {
         String line = file.readLine();
         String[] values = null;
-        if(nlines == Lines.DOUBLELINE.ordinal()) line = file.readLine();
+        if(nlines == DOUBLELINE) line = file.readLine();
 
         for (int i = 0; i < n; i++) {
             switch (mode){
@@ -32,6 +37,7 @@ public class Tools {
                     break;
                 case INT_INT_INT_INT:
                     int e1,e2,e3,e4;
+                    values = line.split("\\d\\s+");
                     e1 = Integer.parseInt(values[0].trim());
                     e2 = Integer.parseInt(values[1].trim());
                     e3 = Integer.parseInt(values[2].trim());
@@ -42,7 +48,7 @@ public class Tools {
         }
     }
 
-    private static void correctConditions(int n, Condition[] list, int[] indices){
+    public static void correctConditions(int n, Condition[] list, int[] indices){
         for(int i=0; i<n; i++)
             indices[i] = list[i].getNode1();
         for(int i=0; i<n-1; i++){
@@ -51,6 +57,91 @@ public class Tools {
                 if(list[j].getNode1()>pivot)
                     list[j].setNode1(list[j].getNode1()-1);
         }
+    }
+
+    public static String addExtension(String filename, String extension){
+        String newFilename = filename + extension;
+        System.out.println(newFilename);
+        return newFilename;
+    }
+
+    public static void leerMallayCondiciones(Mesh m, String filename){
+        String inputfilename, line;
+        String[] values;
+        float k, Q;
+        int nnodes, neltos, ndirich, nneu;
+        inputfilename = addExtension(filename, ".dat");
+        try(FileReader fr = new FileReader(inputfilename); BufferedReader file = new BufferedReader(fr)) {
+
+            line = file.readLine();
+            values = line.split("\\d\\s+");
+            k = Float.parseFloat(values[0].trim()); Q = Float.parseFloat(values[1].trim());
+
+            line = file.readLine();
+            values = line.split("\\d\\s+");
+            nnodes = Integer.parseInt(values[0].trim()); neltos = Integer.parseInt(values[1].trim());
+            ndirich = Integer.parseInt(values[2].trim()); nneu = Integer.parseInt(values[3].trim());
+
+            System.out.println(nnodes+"\t"+neltos+"\t"+ndirich);
+
+            m.setParameters(k,Q);
+            m.setSizes(nnodes,neltos,ndirich,nneu);
+            m.createData();
+
+            obtenerDatos(file,SINGLELINE,nnodes,INT_FLOAT_FLOAT,m.getNodes());
+            obtenerDatos(file,DOUBLELINE,neltos,INT_INT_INT_INT,m.getElements());
+            obtenerDatos(file,DOUBLELINE,ndirich,INT_FLOAT,m.getDirichlet());
+            obtenerDatos(file,DOUBLELINE,nneu,INT_FLOAT,m.getNeumann());
+
+            //Se corrigen los indices en base a las filas que seran eliminadas luego de aplicar dirichlet
+            correctConditions(ndirich, m.getDirichlet(), m.getDirichletIndices());
+
+        } catch (IOException ex){
+            System.out.println("Hubo un error al leer el archivo...\nSaliendo del programa");
+            System.exit(1);
+        }
+    }
+
+    public static Boolean findIndex(int v, int s, int[] arr){
+        for (int i = 0; i < s; i++) {
+            if(arr[i] == v) return true;
+        }
+        return false;
+    }
+
+    public static void writeResults(Mesh m, Vector T, String filename){
+        String outputfilename;
+        int[] dirichlet_indices = m.getDirichletIndices();
+        Condition[] dirich = m.getDirichlet();
+
+        outputfilename = addExtension(filename, ".post.res");
+
+        try (FileWriter fr = new FileWriter(outputfilename); BufferedWriter file = new BufferedWriter(fr)) {
+
+            file.write("GiD Post Results File 1.0\n");
+            file.write("Result \"Temperature\" \"Load Case 1\" 1 Scalar OnNodes\nComponentNames \"T\"\nValues\n");
+
+            int Tpos = 0;
+            int Dpos = 0;
+            int n = m.getSize(Sizes.NODES.ordinal());
+            int nd = m.getSize(Sizes.DIRICHLET.ordinal());
+
+            for (int i = 0; i < n; i++) {
+                if(findIndex(i +1, nd, dirichlet_indices)){
+                    file.write((i+1)+" "+dirich[Dpos].getValue()+"\n");
+                    Dpos++;
+                }else{
+                    file.write((i+1)+" "+T.get(Tpos)+"\n");
+                    Tpos++;
+                }
+            }
+            file.write("End values\n");
+
+        } catch (IOException ex){
+            System.out.println("Hubo un error al escribir el archivo...\nSaliendo del programa");
+            System.exit(1);
+        }
+
     }
 
 }
