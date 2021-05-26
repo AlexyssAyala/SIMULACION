@@ -60,7 +60,7 @@ public class Sel {
         a = calculateMagnitude(n2.getX()-n1.getX(),n2.getY()-n1.getY());
         b = calculateMagnitude(n3.getX()-n2.getX(),n3.getY()-n2.getY());
         c = calculateMagnitude(n3.getX()-n1.getX(),n3.getY()-n1.getY());
-        s = (a+b+c)/2;
+        s = (a+b+c)/2.0f;
 
         A = (float) Math.sqrt(s*(s-a)*(s-b)*(s-c));
 
@@ -130,7 +130,7 @@ public class Sel {
         float Q = m.getParameter(Parameters.HEAT_SOURCE.ordinal()), J, b_i;
         J = calculateLocalJ(element,m);
 
-        b_i = Q * J / 6;
+        b_i = Q * J / 6.0f;
         b.add(b_i);
         b.add(b_i);
         b.add(b_i);

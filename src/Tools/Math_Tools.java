@@ -34,7 +34,7 @@ public class Math_Tools {
     public static float calculateMember(int i, int j, int r, Matrix A, Matrix B){
         float member = 0;
         for (int k = 0; k < r; k++) {
-            member += A.get(i).get(j) * B.get(i).get(j);
+            member += A.get(i).get(k) * B.get(k).get(j);
         }
         return member;
     }
@@ -57,7 +57,7 @@ public class Math_Tools {
             for (int j = 0; j < v.size(); j++) {
                 cell += A.get(i).get(j) * v.get(j);
             }
-            R.set(i,cell);
+            R.set(i,R.get(i) + cell);
         }
     }
 
@@ -123,7 +123,7 @@ public class Math_Tools {
         System.out.println("Calculo de Adjunta...");
         transpose(Cof, Adj);
         System.out.println("Calculo de inversa...");
-        productRealMatrix(1/det,Adj,Minv);
+        productRealMatrix(1.0f/det,Adj,Minv);
 
     }
 

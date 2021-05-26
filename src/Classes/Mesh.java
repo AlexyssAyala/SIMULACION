@@ -2,7 +2,7 @@ package Classes;
 
 import java.util.ArrayList;
 import Enums.*;
-import com.sun.glass.ui.Size;
+import static Enums.Sizes.*;
 
 public class Mesh {
     float parameters[] = new float[6];
@@ -22,10 +22,10 @@ public class Mesh {
         parameters[Parameters.HEAT_SOURCE.ordinal()] = Q;
     }
     public void setSizes(int nnodes, int neltos, int ndirich, int nneu){
-        sizes[Sizes.NODES.ordinal()]=nnodes;
-        sizes[Sizes.ELEMENTS.ordinal()]=neltos;
-        sizes[Sizes.DIRICHLET.ordinal()]=ndirich;
-        sizes[Sizes.NEUMANN.ordinal()]=nneu;
+        sizes[NODES.ordinal()]=nnodes;
+        sizes[ELEMENTS.ordinal()]=neltos;
+        sizes[DIRICHLET.ordinal()]=ndirich;
+        sizes[NEUMANN.ordinal()]=nneu;
     }
     public int getSize(int s){
         return sizes[s];
@@ -34,11 +34,16 @@ public class Mesh {
         return parameters[p];
     }
     public void createData(){
-        node_list = new Node[Sizes.NODES.ordinal()];
-        element_list = new Element[Sizes.ELEMENTS.ordinal()];
-        indices_dirich = new int[Sizes.DIRICHLET.ordinal()];
-        dirichlet_list = new Condition[Sizes.DIRICHLET.ordinal()];
-        neumann_list = new Condition[Sizes.NEUMANN.ordinal()];
+        /*En este punto todos los arreglos que guardan objetos tienen elementos nulos. Entonces hay que llenarlas con nuevas instancias,
+          Para eso se creo un metodo estatico en las clases Node, Element y Condition que generan un arreglo lleno de objetos el cual es
+          el que trabajaremos
+        */
+        node_list = Node.createNodes(sizes[NODES.ordinal()]);
+        element_list = Element.createElements(sizes[ELEMENTS.ordinal()]);
+        indices_dirich = new int[sizes[DIRICHLET.ordinal()]];
+        dirichlet_list = Condition.createConditions(sizes[DIRICHLET.ordinal()]);
+        neumann_list = Condition.createConditions(sizes[NEUMANN.ordinal()]);
+
     }
 
     public int[] getDirichletIndices() {

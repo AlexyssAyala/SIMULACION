@@ -29,12 +29,13 @@ public class Main {
         System.out.println("Datos obtenidos correctamente\n***********************");
 
         crearSistemasLocales(m, localKs, localbs);
+        //showKs(localKs); showbs(localbs);
         System.out.println("*******************************");
 
         zeroes(K, m.getSize(NODES.ordinal()));
         zeroes(b, m.getSize(NODES.ordinal()));
         ensamblaje(m, localKs, localbs, K, b);
-
+        //K.Show(); b.Show();
         System.out.println("*******************************");
 
         applyNeumann(m, b);
