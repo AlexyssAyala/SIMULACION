@@ -13,6 +13,7 @@ import static Enums.Lines.*;
 import static Enums.Modes.*;
 
 public class Tools {
+    //Metodo estatico que lee los datos del programa y los almacena en los objetos necesarios dependiendo del caso
     public static void obtenerDatos(BufferedReader file, Lines nlines, int n, Modes mode, Item[] itemList) throws IOException {
         String line;
         line = file.readLine(); line = file.readLine();
@@ -53,30 +54,35 @@ public class Tools {
             }
         }
     }
-
+    //Se corrigen los indices en base a las condiciones de dirichlet
     public static void correctConditions(int n, Condition[] list, int[] indices){
         for(int i=0; i<n; i++)
             indices[i] = list[i].getNode1();
         for(int i=0; i<n-1; i++){
             int pivot = list[i].getNode1();
             for(int j=i; j<n; j++)
+                //Si la condicion corresponde a un nodo es posterior al pivote, se aplica la correcion al indice
                 if(list[j].getNode1()>pivot)
                     list[j].setNode1(list[j].getNode1()-1);
         }
     }
 
+    //Funcion que concatena la extension y el nombre del archivo
     public static String addExtension(String filename, String extension){
         String newFilename = filename + extension;
-        System.out.println(newFilename);
         return newFilename;
     }
 
+    //Funcion que lee los datos de la malla de un documento y los almacena en un objeto de la clase Mesh
     public static void leerMallayCondiciones(Mesh m, String filename){
         String inputfilename, line;
         String[] values;
         float k, Q;
         int nnodes, neltos, ndirich, nneu;
         inputfilename = addExtension(filename, ".dat");
+
+        //Se crea la conexion con el archivo. Cuando se termine de ejecutar la sentencia try catch la conexin
+        //se cierra. El try catch es requerido para poder usar los objetos FileReader y BufferedReader
         try(FileReader fr = new FileReader(inputfilename); BufferedReader file = new BufferedReader(fr)) {
 
             line = file.readLine();
@@ -120,6 +126,7 @@ public class Tools {
         return false;
     }
 
+    //Metodo que escribe en un archivo los resultados del SEL
     public static void writeResults(Mesh m, Vector T, String filename){
         String outputfilename;
         int[] dirichlet_indices = m.getDirichletIndices();

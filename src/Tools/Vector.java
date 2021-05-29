@@ -16,8 +16,13 @@ public class Vector extends ArrayList<Float> {
         }
     }
 
-    //Funcion que imprime el vector
+    //Funcion que imprime el vector, se utiliza el bucle para poder asignar el numero de digitos decimales y
+    //controlar el espacio entre cada numero, haciendo que la matriz y el vector sean mas faciles de leer
     public void Show(){
-        System.out.println(this);
+        System.out.print("[\t");
+        for (int i = 0; i < this.size(); i++) {
+            System.out.print(String.format("%.3f", this.get(i))+"\t");
+        }
+        System.out.println("]");
     }
 }

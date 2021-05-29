@@ -4,6 +4,7 @@ public class Math_Tools {
 
     private Math_Tools(){};
 
+    //Funciones sobrecargadas que llenan de 0 matrices y vectores respectivamente.
     public static void zeroes(Matrix M, int n){
         for (int i = 0; i < n; i++) {
             M.add(new Vector(n,0));
@@ -22,6 +23,7 @@ public class Math_Tools {
         }
     }
 
+    //Funcion que copia la informacion de una matriz A a una matriz copy
     public static void copyMatrix(Matrix A, Matrix copy){
         zeroes(copy, A.size());
         for (int i = 0; i < A.size(); i++) {
@@ -38,6 +40,8 @@ public class Math_Tools {
         }
         return member;
     }
+
+    //Metodo estatico que calcula el producto de dos matrices
     public static Matrix productMatrixMatrix(Matrix A, Matrix B, int n, int r, int m){
         //Instancia la matriz y la llena de ceros
         Matrix R = new Matrix(n,m,0);
@@ -50,6 +54,7 @@ public class Math_Tools {
         return R;
     }
 
+    //Metodo estatico que calcula el producto de una matriz A por un vector v
     public static void productMatrixVector(Matrix A, Vector v, Vector R){
         for (int i = 0; i < A.size(); i++) {
             float cell = 0;
@@ -61,6 +66,7 @@ public class Math_Tools {
         }
     }
 
+    //Metodo estatico que calcula el producto de un numero real por una matriz
     public static void productRealMatrix(float real, Matrix M, Matrix R){
         zeroes(R,M.size());
         for (int i = 0; i < M.size(); i++) {
@@ -69,7 +75,8 @@ public class Math_Tools {
             }
         }
     }
-    
+
+    //Metodo que calcula el menor de una matriz M
     public static void getMinor(Matrix M, int i, int j){
         M.remove(i);
         for (int k = 0; k < M.size(); k++) {
@@ -77,6 +84,7 @@ public class Math_Tools {
         }
     }
 
+    //Funcion que calcula el determinante de una matriz M
     public static float determinant(Matrix M){
         if(M.size() == 1) return M.get(0).get(0);
         else{
@@ -91,6 +99,7 @@ public class Math_Tools {
         }
     }
 
+    //Metodo que calcula la matriz de cofactores dada una matriz M
     public static void cofactors(Matrix M, Matrix Cof){
         zeroes(Cof, M.size());
         for (int i = 0; i < M.size(); i++) {
@@ -103,6 +112,7 @@ public class Math_Tools {
         }
     }
 
+    //Metodo que calcula la matriz transpuesta dada una matriz M
     public static void transpose(Matrix M, Matrix T){
         zeroes(T, M.get(0).size(), M.size());
         for (int i = 0; i < M.size(); i++) {
@@ -112,6 +122,7 @@ public class Math_Tools {
         }
     }
 
+    //Metodo que calcula la inversa de una matriz M utilizando el metodo de la adjunta.
     public static void inverseMatrix(Matrix M, Matrix Minv){
         System.out.println("Iniciando Calculo de inversa ....");
         Matrix Cof = new Matrix(), Adj = new Matrix();

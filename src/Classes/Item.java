@@ -1,5 +1,6 @@
 package Classes;
 
+//Clase abstracta la cual establece la mayoria de parametros utilizados por el sistema
 public abstract class Item {
 
     protected int id;
@@ -10,7 +11,7 @@ public abstract class Item {
     protected int node3;
     protected float value;
 
-
+    //Setters y Getters
     public void setId(int identifier) {
 
         id = identifier;
@@ -74,5 +75,6 @@ public abstract class Item {
         return value;
     }
 
+    //Metodo abstracto el cual permite asignar los valores dependiendo de la clase donde sera llamada.
     public abstract void setValues(int a, float b, float c, int d, int e, int f, float g);
 }

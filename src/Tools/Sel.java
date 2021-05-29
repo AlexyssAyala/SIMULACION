@@ -10,6 +10,7 @@ import static Tools.Math_Tools.*;
 public class Sel {
     private Sel(){};
 
+    //Muestra las Ks
     public static void showKs(ArrayList<Matrix> Ks){
         for (int i = 0; i < Ks.size() ; i++) {
             System.out.println("K del elemento"+(i+1));
@@ -18,6 +19,7 @@ public class Sel {
         }
     }
 
+    //Muestra ls bs
     public static void showbs(ArrayList<Vector> bs){
         for (int i = 0; i < bs.size() ; i++) {
             System.out.println("b del elemento"+(i+1));
@@ -26,6 +28,7 @@ public class Sel {
         }
     }
 
+    //Crea el elemento local
     public static float calculateLocalD(int i, Mesh m){
         float D,a,b,c,d;
 
@@ -45,6 +48,7 @@ public class Sel {
         return D;
     }
 
+    //Calcula la magnitud de un vector.
     public static float calculateMagnitude(float v1, float v2){
         return (float) Math.sqrt(Math.pow(v1,2)+Math.pow(v2,2));
     }
@@ -67,6 +71,7 @@ public class Sel {
         return A;
     }
 
+    //Calcula la la matriz local A
     public static void calculateLocalA(int i,Matrix A, Mesh m){
         Element e = m.getElement(i);
         Node n1 = m.getNode(e.getNode1()-1);
@@ -78,6 +83,7 @@ public class Sel {
         A.get(1).set(1, n2.getX()-n1.getX());
     }
 
+    //Calcula y llena la matriz B
     private static void calculateB(Matrix B){
         B.get(0).set(0, -1f);
         B.get(0).set(1, 1f);
@@ -87,6 +93,7 @@ public class Sel {
         B.get(1).set(2, 1f);
     }
 
+    //Metodo que cera una matriz local K y lo alamcena en m
     private static Matrix createLocalK(int element,Mesh m){
         // K = (k*Ae/D^2)Bt*At*A*B := K_3x3
         float D,Ae,k = m.getParameter(Parameters.THERMAL_CONDUCTIVITY.ordinal());
@@ -124,6 +131,7 @@ public class Sel {
         return J;
     }
 
+    //Metodo que crea el elemento local b y lo almacena en m
     public static Vector createLocalb(int element,Mesh m){
         Vector b = new Vector();
 
@@ -138,6 +146,7 @@ public class Sel {
         return b;
     }
 
+    //Esta funcion crea los sitemas locales (K y b) y almacena los datos en sus respectivas listas
     public static void crearSistemasLocales(Mesh m, ArrayList<Matrix> localKs, ArrayList<Vector> localbs){
         for(int i = 0; i<m.getSize(Sizes.ELEMENTS.ordinal()); i++){
             localKs.add(createLocalK(i,m));
@@ -145,6 +154,8 @@ public class Sel {
         }
     }
 
+    //Esta funcion realiza el ensamblaje de la matriz K global, recibe el elemento actual, la matriz K local
+    //y la matriz K global en la cual se realizara el ensamblaje
     public static void assemblyK(Element e, Matrix localK, Matrix K){
         int index1 = e.getNode1() - 1;
         int index2 = e.getNode2() - 1;
@@ -161,6 +172,8 @@ public class Sel {
         K.get(index3).set(index3, K.get(index3).get(index3) + localK.get(2).get(2));
     }
 
+    //Esta funcion realiza el ensamblaje del arreglo b global, recibe el elemento actual, el arreglo b local
+    //y el arreglo b glocal en el cual se realizara el ensablaje
     public static void assemblyb(Element e, Vector localb, Vector b){
         int index1 = e.getNode1() - 1;
         int index2 = e.getNode2() - 1;
@@ -171,6 +184,7 @@ public class Sel {
         b.set(index3, b.get(index3) + localb.get(2));
     }
 
+    //Se realiza el ensamblaje de los sistemas locales K y B utilizando las funciones assemblyK y assemblyb
     public static void ensamblaje(Mesh m, ArrayList<Matrix> localKs, ArrayList<Vector> localbs, Matrix K,Vector b){
         for(int i=0; i<m.getSize(Sizes.ELEMENTS.ordinal()); i++){
             Element e = m.getElement(i);
@@ -179,6 +193,7 @@ public class Sel {
         }
     }
 
+    //Funcion que aplica la condicion de neumann al vector b
     public static void applyNeumann(Mesh m,Vector b){
         for(int i=0;i <m.getSize(Sizes.NEUMANN.ordinal()); i++){
             Condition c = m.getCondition(i,Sizes.NEUMANN);
@@ -186,6 +201,7 @@ public class Sel {
         }
     }
 
+    //Funcion que aplica la condicion de dirichlet al sistema de ecuaciones
     public static void applyDirichlet(Mesh m,Matrix K,Vector b){
         for(int i=0; i<m.getSize(Sizes.DIRICHLET.ordinal()); i++){
 
@@ -203,6 +219,7 @@ public class Sel {
         }
     }
 
+    //Funcion que calcula el resultado del SEL
     public static void calculate(Matrix K, Vector b, Vector T){
         System.out.println("Iniciando calculo de respuesta...");
         Matrix Kinv = new Matrix();
