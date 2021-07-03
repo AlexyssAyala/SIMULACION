@@ -14,10 +14,11 @@ public class Element extends Item{
     }
 
     @Override
-    public void setValues(int a, float b, float c, int d, int e, int f, float g) {
+    public void setValues(int a, float b, float c, int d, int e, int f, float g, int h, float i) {
         id = a;
         node1 = d;
         node2 = e;
         node3 = f;
+        node4 = h;
     }
 }

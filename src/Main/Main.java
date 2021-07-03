@@ -21,10 +21,10 @@ public class Main {
         Vector T = new Vector();
 
         //Presentacion al programa
-        System.out.println("IMPLEMENTACION DEL METODO DE LOS ELEMENTOS FINITOS");
-        System.out.println("\t- TRANSFERENCIA DE CALOR\n"+"\t- 2 DIMENSIONES");
+        System.out.println("IMPLEMENTACION DEL METODO DE LOS ELEMENTOS FINITOS EN 3D");
+        System.out.println("\t- POLIGLOT SIDEQUEST\n"+"\t- 3 DIMENSIONES");
         System.out.println("\t- FUNCIONES DE FORMA LINEALES\n"+"\t- PESOS DE GALERKIN");
-        System.out.println("\t- MALLA TRIANGULAR IRREGULAR");
+        System.out.println("\t- MALLA CUADRATICA DE TETAEDRO IRREGULAR");
         System.out.println("*************************************************************************");
 
         //Se instancia el objeto de la clase Mesh
@@ -35,14 +35,14 @@ public class Main {
 
         //Se crean los sitemas locales y se muestran
         crearSistemasLocales(m, localKs, localbs);
-        showKs(localKs); showbs(localbs);
+        //showKs(localKs); showbs(localbs);
         System.out.println("*******************************");
 
         //Las matrices K y b se llenan de 0 y posteriormente se realiza el ensamblaje
         zeroes(K, m.getSize(NODES.ordinal()));
         zeroes(b, m.getSize(NODES.ordinal()));
         ensamblaje(m, localKs, localbs, K, b);
-        K.Show(); b.Show();
+       // K.Show(); b.Show();
         System.out.println("*******************************");
 
         //Se aplica la condicion de Neumann

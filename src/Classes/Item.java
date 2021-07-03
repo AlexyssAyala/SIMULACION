@@ -6,16 +6,35 @@ public abstract class Item {
     protected int id;
     protected float x;
     protected float y;
+    protected float z;
     protected int node1;
     protected int node2;
     protected int node3;
+    protected int node4;
     protected float value;
+
+    public float getZ() {
+        return z;
+    }
+
+
+    public void setNode4(int node4) {
+        this.node4 = node4;
+    }
 
     //Setters y Getters
     public void setId(int identifier) {
 
         id = identifier;
     }
+    public void setZ(float z) {
+        this.z = z;
+    }
+
+    public int getNode4() {
+        return node4;
+    }
+
 
     public void setX(float x) {
 
@@ -42,6 +61,11 @@ public abstract class Item {
         this.node3 = node3;
     }
 
+    public Item(float z, int node4) {
+        this.z = z;
+        this.node4 = node4;
+    }
+
     public void setValue(float value) {
 
         this.value = value;
@@ -59,6 +83,8 @@ public abstract class Item {
         return y;
     }
 
+    public float getZ() {return z;}
+
     public int getNode1() {
         return node1;
     }
@@ -71,10 +97,15 @@ public abstract class Item {
         return node3;
     }
 
+    public int getNode4() {
+        return node4;
+    }
+
     public float getValue() {
         return value;
     }
 
     //Metodo abstracto el cual permite asignar los valores dependiendo de la clase donde sera llamada.
-    public abstract void setValues(int a, float b, float c, int d, int e, int f, float g);
+    public abstract void setValues(int a, float b, float c, int d, int e, int f, float g, float h, float i);
+
 }

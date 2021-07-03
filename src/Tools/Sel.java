@@ -30,20 +30,27 @@ public class Sel {
 
     //Crea el elemento local
     public static float calculateLocalD(int i, Mesh m){
-        float D,a,b,c,d;
+        float D,a,b,c,d,e,f,g,h,i;
 
-        Element e = m.getElement(i);
+        Element el = m.getElement(i);
 
-        Node n1 = m.getNode(e.getNode1()-1);
-        Node n2 = m.getNode(e.getNode2()-1);
-        Node n3 = m.getNode(e.getNode3()-1);
+        Node n1 = m.getNode(el.getNode1()-1);
+        Node n2 = m.getNode(el.getNode2()-1);
+        Node n3 = m.getNode(el.getNode3()-1);
+        Node n4 = m.getNode(el.getNode4()-1);
 
         a=n2.getX()-n1.getX();
         b=n2.getY()-n1.getY();
-        c=n3.getX()-n1.getX();
-        d=n3.getY()-n1.getY();
+        c=n2.getZ()-n1.getZ();
+        d=n3.getX()-n1.getX();
+        e=n3.getY()-n1.getY();
+        f=n3.getZ()-n1.getZ();
+        g=n4.getX()-n1.getX();
+        h=n4.getY()-n1.getY();
+        i=n4.getZ()-n1.getZ();
+        //SE CALCULA EL DETERMINANTE DE ESTA MATRIZ UTILIZANDO LA REGLA DE SARRUS
 
-        D = a*d - b*c;
+        D = a*e*i+d*h*c+g*b*f-g*e*c-a*h*f-d*b*i;
 
         return D;
     }
@@ -70,17 +77,36 @@ public class Sel {
 
         return A;
     }
-
+    public static float  ab_ij(float ai, float aj, float al, float bi, float bj, float bl){
+        return (ai-al)*(bj-bl)-(aj-al)*(bi-bl);
+    }
     //Calcula la la matriz local A
     public static void calculateLocalA(int i,Matrix A, Mesh m){
         Element e = m.getElement(i);
         Node n1 = m.getNode(e.getNode1()-1);
         Node n2 = m.getNode(e.getNode2()-1);
         Node n3 = m.getNode(e.getNode3()-1);
+        Node n4 = m.getNode(e.getNode4()-1);
+
+        A.get(0).set(0,ab_ij(n3.getY(),n4.getY(),n1.getY(),n3.getZ(),n4.getZ(),n1.getZ()));
+        A.get(0).set(1,ab_ij(n4.getY(),n2.getY(),n1.getY(),n4.getZ(),n2.getZ(),n1.getZ()));
+        A.get(0).set(2,ab_ij(n2.getY(),n3.getY(),n1.getY(),n2.getZ(),n3.getZ(),n2.getZ()));
+        A.get(1).set(0,ab_ij(n4.getX(),n3.getX(),n1.getX(),n4.getZ(),n3.getZ(),n1.getZ()));
+        A.get(1).set(1,ab_ij(n2.getX(),n4.getX(),n1.getX(),n2.getZ(),n4.getZ(),n1.getZ()));
+        A.get(1).set(2,ab_ij(n3.getX(),n2.getX(),n1.getX(),n3.getZ(),n2.getZ(),n1.getZ()));
+        A.get(2).set(0,ab_ij(n3.getX(),n4.getX(),n1.getX(),n3.getY(),n4.getY(),n1.getY()));
+        A.get(2).set(1,ab_ij(n4.getX(),n2.getX(),n1.getX(),n4.getY(),n2.getY(),n1.getY()));
+        A.get(2).set(2,ab_ij(n2.getX(),n3.getX(),n1.getX(),n2.getY(),n3.getY(),n1.getY()));
+
+
+
+
         A.get(0).set(0,n3.getY()-n1.getY());
         A.get(0).set(1, n1.getY()-n2.getY());
         A.get(1).set(0,n1.getX()-n3.getX());
         A.get(1).set(1, n2.getX()-n1.getX());
+
+
     }
 
     //Calcula y llena la matriz B
@@ -88,45 +114,81 @@ public class Sel {
         B.get(0).set(0, -1f);
         B.get(0).set(1, 1f);
         B.get(0).set(2, 0f);
+        B.get(1).set(3, 0f);
         B.get(1).set(0, -1f);
         B.get(1).set(1, 0f);
         B.get(1).set(2, 1f);
+        B.get(1).set(3, 0f);
+        B.get(2).set(0, -1f);
+        B.get(2).set(1, 0f);
+        B.get(2).set(2, 0f);
+        B.get(2).set(3, 1f);
+
+    }
+
+    public static float calculateLocalVolume(int ind, mesh m){
+        float V,a,b,c,d,e,f,g,h,i;
+        Element el = m.getElement(ind);
+        Node n1 = m.getNode(el.getNode1()-1);
+        Node n2 = m.getNode(el.getNode2()-1);
+        Node n3 = m.getNode(el.getNode3()-1);
+        Node n4 = m.getNode(el.getNode4()-1);
+
+        a=n2.getX()-n1.getX();
+        b=n2.getY()-n1.getY();
+        c=n2.getZ()-n1.getZ();
+        d=n3.getX()-n1.getX();
+        e=n3.getY()-n1.getY();
+        f=n3.getZ()-n1.getZ();
+        g=n4.getX()-n1.getX();
+        h=n4.getY()-n1.getY();
+        i=n4.getZ()-n1.getZ();
+        //PARA EL DETERMINANTE SE USA LA REGLA  DE SARRUS
+        V=(1.00/6.00)*(a*e*i+d*h*c+g*b*f-g*e*c-a*h*f-d*b*i);
+        return  V;
     }
 
     //Metodo que cera una matriz local K y lo alamcena en m
     private static Matrix createLocalK(int element,Mesh m){
-        // K = (k*Ae/D^2)Bt*At*A*B := K_3x3
-        float D,Ae,k = m.getParameter(Parameters.THERMAL_CONDUCTIVITY.ordinal());
+        // K=(k*Ve/D^2)Bd*At*A*B := k_4*4
+        float D,Ve,k = m.getParameter(Parameters.THERMAL_CONDUCTIVITY.ordinal());
         Matrix K=new Matrix(),A=new Matrix(),B=new Matrix(),Bt=new Matrix(),At=new Matrix();
 
         D = calculateLocalD(element,m);
-        Ae = calculateLocalArea(element,m);
+        Ve = calculateLocalVolume(element,m);
 
-        zeroes(A,2);
-        zeroes(B,2,3);
+        zeroes(A,3);
+        zeroes(B,3,4);
         calculateLocalA(element,A,m);
         calculateB(B);
         transpose(A,At);
         transpose(B,Bt);
 
-        productRealMatrix(k*Ae/(D*D),productMatrixMatrix(Bt,productMatrixMatrix(At,productMatrixMatrix(A,B,2,2,3),2,2,3),3,2,3),K);
+        productRealMatrix(k*Ve/(D*D),productMatrixMatrix(Bt,productMatrixMatrix(At,productMatrixMatrix(A,B,3,3,4),3,3,4),4,3,4),K);
 
         return K;
     }
 
     public static float calculateLocalJ(int i, Mesh m){
-        float J,a,b,c,d;
-        Element e = m.getElement(i);
-        Node n1 = m.getNode(e.getNode1()-1);
-        Node n2 = m.getNode(e.getNode2()-1);
-        Node n3 = m.getNode(e.getNode3()-1);
+        float J,a,b,c,d,e,f,g,h,i;
+        Element el = m.getElement(i);
+        Node n1 = m.getNode(el.getNode1()-1);
+        Node n2 = m.getNode(el.getNode2()-1);
+        Node n3 = m.getNode(el.getNode3()-1);
+        Node n4 = m.getNode(el.getNode4()-1);
 
         a=n2.getX()-n1.getX();
         b=n3.getX()-n1.getX();
-        c=n2.getY()-n1.getY();
-        d=n3.getY()-n1.getY();
+        c=n4.getX()-n1.getX();
+        d=n2.getY()-n1.getY();
+        e=n3.getY()-n1.getY();
+        f=n4.getY()-n1.getY();
+        g=n2.getZ()-n1.getZ();
+        h=n3.getZ()-n1.getZ();
+        i=n4.getZ()-n1.getZ();
+        //SE CALCULA EL DETERMIANTE DE ESTA MATRIZ UTILIZANDO METODO DE SARRUS
 
-        J = a * d - b * c;
+        J = a*e*i+d*h*c+g*b*f-g*e*c-a*h*f-d*b*i;
 
         return J;
     }
@@ -138,7 +200,8 @@ public class Sel {
         float Q = m.getParameter(Parameters.HEAT_SOURCE.ordinal()), J, b_i;
         J = calculateLocalJ(element,m);
 
-        b_i = Q * J / 6.0f;
+        b_i = Q * J / 24.0f;
+        b.add(b_i);
         b.add(b_i);
         b.add(b_i);
         b.add(b_i);
@@ -160,16 +223,25 @@ public class Sel {
         int index1 = e.getNode1() - 1;
         int index2 = e.getNode2() - 1;
         int index3 = e.getNode3() - 1;
+        int index4 = e.getNode4() - 1;
 
         K.get(index1).set(index1, K.get(index1).get(index1) + localK.get(0).get(0));
         K.get(index1).set(index2, K.get(index1).get(index2) + localK.get(0).get(1));
         K.get(index1).set(index3, K.get(index1).get(index3) + localK.get(0).get(2));
+        K.get(index1).set(index4, K.get(index1).get(index4) + localK.get(0).get(3));
         K.get(index2).set(index1, K.get(index2).get(index1) + localK.get(1).get(0));
         K.get(index2).set(index2, K.get(index2).get(index2) + localK.get(1).get(1));
         K.get(index2).set(index3, K.get(index2).get(index3) + localK.get(1).get(2));
+        K.get(index2).set(index4, K.get(index2).get(index4) + localK.get(1).get(3));
         K.get(index3).set(index1, K.get(index3).get(index1) + localK.get(2).get(0));
         K.get(index3).set(index2, K.get(index3).get(index2) + localK.get(2).get(1));
         K.get(index3).set(index3, K.get(index3).get(index3) + localK.get(2).get(2));
+        K.get(index3).set(index4, K.get(index3).get(index4) + localK.get(2).get(3));
+        K.get(index4).set(index1, K.get(index4).get(index1) + localK.get(3).get(0));
+        K.get(index4).set(index2, K.get(index4).get(index2) + localK.get(3).get(1));
+        K.get(index4).set(index3, K.get(index4).get(index3) + localK.get(3).get(2));
+        K.get(index4).set(index4, K.get(index4).get(index4) + localK.get(2).get(3));
+
     }
 
     //Esta funcion realiza el ensamblaje del arreglo b global, recibe el elemento actual, el arreglo b local
@@ -178,10 +250,12 @@ public class Sel {
         int index1 = e.getNode1() - 1;
         int index2 = e.getNode2() - 1;
         int index3 = e.getNode3() - 1;
+        int index4 = e.getNode4() - 1;
 
         b.set(index1, b.get(index1) + localb.get(0));
         b.set(index2, b.get(index2) + localb.get(1));
         b.set(index3, b.get(index3) + localb.get(2));
+        b.set(index4, b.get(index4) + localb.get(3));
     }
 
     //Se realiza el ensamblaje de los sistemas locales K y B utilizando las funciones assemblyK y assemblyb

@@ -9,6 +9,7 @@ import Enums.Sizes;
 
 import java.io.*;
 
+import static Enums.Indicator.NOTHING;
 import static Enums.Lines.*;
 import static Enums.Modes.*;
 
@@ -28,28 +29,30 @@ public class Tools {
                     values = line.split("\\s+");
                     e0 = Integer.parseInt(values[0].trim()); r0 = Float.parseFloat(values[1].trim());
                     System.out.println(e0+"\t"+r0);
-                    itemList[i].setValues(0,0,0,e0,0,0,r0 );
+                    itemList[i].setValues(NOTHING,NOTHING,NOTHING,NOTHING,e0,NOTHING,NOTHING,NOTHING,r0 );
                     break;
-                case INT_FLOAT_FLOAT:
-                    int e; float r,rr;
+                case INT_FLOAT_FLOAT_FLOAT:
+                    int e; float r,rr,rrr;
                     line = file.readLine();
                     values = line.split("\\s+");
                     e = Integer.parseInt(values[0].trim());
                     r = Float.parseFloat(values[1].trim());
                     rr = Float.parseFloat(values[2].trim());
+                    rrr = Float.parseFloat(values[3].trim());
                     System.out.println(e+"\t"+r+"\t"+rr);
-                    itemList[i].setValues(e,r,rr,0,0,0,0);
+                    itemList[i].setValues(e,r,rr,rrr,NOTHING,NOTHING,NOTHING,NOTHING,NOTHING);
                     break;
-                case INT_INT_INT_INT:
-                    int e1,e2,e3,e4;
+                case INT_INT_INT_INT_INT:
+                    int e1,e2,e3,e4,e5;
                     line = file.readLine();
                     values = line.split("\\s+");
                     e1 = Integer.parseInt(values[0].trim());
                     e2 = Integer.parseInt(values[1].trim());
                     e3 = Integer.parseInt(values[2].trim());
                     e4 = Integer.parseInt(values[3].trim());
+                    e5 = Integer.parseInt(values[4].trim());
                     System.out.println(e1+"\t"+e2+"\t"+e3+"\t"+e4);
-                    itemList[i].setValues(e1,0,0,e2,e3,e4,0);
+                    itemList[i].setValues(e1,NOTHING,NOTHING,NOTHING,e2,e3,e4,e5,NOTHING);
                     break;
             }
         }
@@ -102,9 +105,9 @@ public class Tools {
             m.setSizes(nnodes,neltos,ndirich,nneu);
             m.createData();
 
-            obtenerDatos(file,SINGLELINE,nnodes,INT_FLOAT_FLOAT,m.getNodes());
+            obtenerDatos(file,SINGLELINE,nnodes,INT_FLOAT_FLOAT_FLOAT,m.getNodes());
             System.out.println("\nElements");
-            obtenerDatos(file,DOUBLELINE,neltos,INT_INT_INT_INT,m.getElements());
+            obtenerDatos(file,DOUBLELINE,neltos,INT_INT_INT_INT_INT,m.getElements());
             System.out.println("\nDirichlet");
             obtenerDatos(file,DOUBLELINE,ndirich,INT_FLOAT,m.getDirichlet());
             System.out.println("\nNeumann");
